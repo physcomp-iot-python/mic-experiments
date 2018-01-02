@@ -6,6 +6,7 @@ import serial
 
 N_FFT = 256
 SAMPLE_RATE = 16e3
+MEDFILT_WINDOW_SIZE = 5
 
 def get_data(serial_obj):
     line = serial_obj.readline().strip()
@@ -45,7 +46,7 @@ try:
     while True:
         try:
             ts, samples = get_data(ser)
-            S = samples
+            S = samples[MEDFILT_WINDOW_SIZE:] #discard first zeroed entries
             Smean = S.mean()
             Sstd  = S.std()
             F, P = signal.welch(S,fs=SAMPLE_RATE, nfft=N_FFT)

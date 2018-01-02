@@ -25,17 +25,23 @@ import array
 import audiobusio
 import board
 import time
+import gc
 
 # Number of samples to read at once.
 NUM_SAMPLES = 160
+MEDFILT_WINDOW_SIZE = 5  #note should be odd!
 
 #initialize microphone
 mic = audiobusio.PDMIn(board.MICROPHONE_CLOCK, board.MICROPHONE_DATA, frequency=16000, bit_depth=16)
-#array to hold samples
-samples = array.array('H', [0] * NUM_SAMPLES)
-
+#array to hold samples and filtered
+buff1 = array.array('H', [0] * NUM_SAMPLES)
+buff2 = array.array('H', [0] * NUM_SAMPLES)
 while True:
+    #print(gc.mem_free())
     print(time.monotonic(),end = " ")
-    mic.record(samples, len(samples))
-    print(" ".join(str(s) for s in samples))
+    mic.record(buff1, NUM_SAMPLES)
+    #run the median filter
+    for i in range(MEDFILT_WINDOW_SIZE,NUM_SAMPLES):
+        buff2[i] = sorted(list(buff1[i-MEDFILT_WINDOW_SIZE:i]))[MEDFILT_WINDOW_SIZE//2]
+    print(" ".join(str(s) for s in buff2))
 
